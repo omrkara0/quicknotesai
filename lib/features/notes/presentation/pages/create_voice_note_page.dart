@@ -145,7 +145,7 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Create Voice Note'),
         actions: [
@@ -167,19 +167,32 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Title',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.6),
+                ),
                 border: InputBorder.none,
               ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('Category: '),
+                Text(
+                  'Category: ',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
                 categoriesAsyncValue.when(
                   data: (categories) => DropdownButton<String>(
                     value: _selectedCategory,
@@ -231,7 +244,13 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
                           color: color,
                           shape: BoxShape.circle,
                           border: color == _selectedColor
-                              ? Border.all(color: Colors.black, width: 2)
+                              ? Border.all(
+                                  color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color ??
+                                      Colors.black,
+                                  width: 2)
                               : null,
                         ),
                       ),
@@ -244,11 +263,22 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
               child: Column(
                 children: [
                   if (_audioFile == null) ...[
-                    const Icon(Icons.audio_file, size: 64, color: Colors.grey),
+                    Icon(Icons.audio_file,
+                        size: 64,
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.color
+                            ?.withOpacity(0.5)),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Select an MP3 file to transcribe',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.color
+                              ?.withOpacity(0.5)),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
@@ -256,8 +286,9 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
                       icon: const Icon(Icons.upload_file),
                       label: const Text('Choose MP3 File'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.black,
-                        foregroundColor: AppColors.white,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 12,
@@ -266,11 +297,19 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
                     ),
                   ] else ...[
                     if (_isProcessing)
-                      const Column(
+                      Column(
                         children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text('Transcribing audio...'),
+                          CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Transcribing audio...',
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color,
+                            ),
+                          ),
                         ],
                       )
                     else if (_transcription != null)
@@ -278,10 +317,15 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(_transcription!),
+                        child: Text(
+                          _transcription!,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
+                        ),
                       ),
                     const SizedBox(height: 16),
                     TextButton.icon(

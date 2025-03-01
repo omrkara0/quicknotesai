@@ -179,7 +179,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Edit Note'),
         actions: [
@@ -205,19 +205,32 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Title',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.6),
+                ),
                 border: InputBorder.none,
               ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('Category: '),
+                Text(
+                  'Category: ',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
                 categoriesAsyncValue.when(
                   data: (categories) => DropdownButton<String>(
                     value: _selectedCategory,
@@ -256,64 +269,70 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Wrap(
-                    spacing: 8,
-                    children: _colors
-                        .map(
-                          (color) => GestureDetector(
-                            onTap: () => setState(() => _selectedColor = color),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                                border: color == _selectedColor
-                                    ? Border.all(color: Colors.black, width: 2)
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.black,
-                    shape: BoxShape.circle,
-                  ),
-                  child: _isSummarizing
-                      ? const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.white),
-                            ),
-                          ),
-                        )
-                      : IconButton(
-                          icon: const Icon(Icons.auto_fix_high,
-                              color: AppColors.white),
-                          onPressed: _summarizeContent,
+            Wrap(
+              spacing: 8,
+              children: _colors
+                  .map(
+                    (color) => GestureDetector(
+                      onTap: () => setState(() => _selectedColor = color),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: color == _selectedColor
+                              ? Border.all(
+                                  color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color ??
+                                      Colors.black,
+                                  width: 2)
+                              : null,
                         ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (_isSummarizing)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 16.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                TextButton.icon(
+                  onPressed: _isSummarizing ? null : _summarizeContent,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Summarize'),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _contentController,
-              maxLines: null,
-              decoration: const InputDecoration(
-                hintText: 'Note content',
+              maxLines: 15,
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Write your note here...',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.6),
+                ),
                 border: InputBorder.none,
               ),
             ),

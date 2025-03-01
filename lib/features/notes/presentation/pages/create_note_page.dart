@@ -102,7 +102,7 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Create Note'),
         actions: [
@@ -124,19 +124,32 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Title',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.6),
+                ),
                 border: InputBorder.none,
               ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('Category: '),
+                Text(
+                  'Category: ',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
                 categoriesAsyncValue.when(
                   data: (categories) => DropdownButton<String>(
                     value: _selectedCategory,
@@ -188,7 +201,13 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
                           color: color,
                           shape: BoxShape.circle,
                           border: color == _selectedColor
-                              ? Border.all(color: Colors.black, width: 2)
+                              ? Border.all(
+                                  color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color ??
+                                      Colors.black,
+                                  width: 2)
                               : null,
                         ),
                       ),
@@ -196,12 +215,23 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
             TextField(
               controller: _contentController,
-              maxLines: null,
-              decoration: const InputDecoration(
-                hintText: 'Note content',
+              maxLines: 15,
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Write your note here...',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.6),
+                ),
                 border: InputBorder.none,
               ),
             ),

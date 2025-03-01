@@ -25,6 +25,43 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
+      scaffoldBackgroundColor: AppColors.white,
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: AppColors.white,
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        background: AppColors.darkBackground,
+        primary: AppColors.darkText,
+        secondary: AppColors.yellow,
+        tertiary: AppColors.orange,
+        surface: AppColors.darkSurface,
+      ),
+      textTheme: GoogleFonts.poppinsTextTheme(
+        ThemeData.dark().textTheme,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.darkBackground,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: AppColors.darkText),
+        titleTextStyle: const TextStyle(
+          color: AppColors.darkText,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      scaffoldBackgroundColor: AppColors.darkBackground,
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: AppColors.darkSurface,
+      ),
+      cardColor: AppColors.darkSurface,
     );
   }
 }

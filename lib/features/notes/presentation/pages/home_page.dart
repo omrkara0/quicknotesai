@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../providers/note_provider.dart';
 import '../../domain/note.dart';
 import 'create_note_page.dart';
@@ -21,6 +22,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   String _selectedCategory = 'All';
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _showAddCategoryDialog() {
     showDialog(
@@ -42,22 +44,36 @@ class _HomePageState extends ConsumerState<HomePage> {
     };
 
     final categoriesAsyncValue = ref.watch(categoriesProvider);
+    final isDarkMode = ref.watch(isDarkModeProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      key: _scaffoldKey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      endDrawer: _buildEndDrawer(context),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'My\nNotes',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  height: 1.2,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'My\nNotes',
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () {
+                      _scaffoldKey.currentState?.openEndDrawer();
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               SingleChildScrollView(
@@ -167,13 +183,84 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  Widget _buildEndDrawer(BuildContext context) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.7,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Ayarlar',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ListTile(
+                title: const Text('Tema'),
+                subtitle: Text(isDarkMode ? 'Koyu Tema' : 'Açık Tema'),
+                trailing: Switch(
+                  value: isDarkMode,
+                  onChanged: (value) {
+                    ref.read(themeProvider.notifier).toggleTheme();
+                  },
+                ),
+              ),
+              const Divider(),
+              ListTile(
+                title: const Text('Hakkında'),
+                trailing: const Icon(Icons.info_outline),
+                onTap: () {
+                  _showAboutDialog(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Quick Notes AI Hakkında'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+                'Quick Notes AI, notlarınızı hızlı ve kolay bir şekilde yönetmenizi sağlayan bir uygulamadır.'),
+            SizedBox(height: 8),
+            Text('Sürüm: 1.0.0'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCircularButton({
     required IconData icon,
     required VoidCallback onPressed,
   }) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.black,
+        color: isDarkMode ? AppColors.darkAccent : AppColors.black,
         shape: BoxShape.circle,
       ),
       child: IconButton(
@@ -185,6 +272,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildCategoryChip(String label, Color color, bool isSelected) {
     final isCustomCategory = color == AppColors.blue;
+    final isDarkMode = ref.watch(isDarkModeProvider);
 
     return GestureDetector(
       onTap: () => setState(() => _selectedCategory = label),
@@ -197,14 +285,25 @@ class _HomePageState extends ConsumerState<HomePage> {
               label: Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? AppColors.white : AppColors.black,
+                  color: isSelected
+                      ? AppColors.white
+                      : isDarkMode
+                          ? AppColors.white
+                          : AppColors.black,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              backgroundColor:
-                  isSelected ? AppColors.black : Colors.transparent,
+              backgroundColor: isSelected
+                  ? isDarkMode
+                      ? AppColors.darkAccent
+                      : AppColors.black
+                  : Colors.transparent,
               side: BorderSide(
-                  color: isSelected ? Colors.transparent : Colors.grey[300]!),
+                  color: isSelected
+                      ? Colors.transparent
+                      : isDarkMode
+                          ? Colors.grey[700]!
+                          : Colors.grey[300]!),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               deleteIcon:
                   isCustomCategory ? const Icon(Icons.close, size: 16) : null,
@@ -253,6 +352,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _buildNoteCard(Note note) {
     final formattedDate =
         DateFormat('MMM d, y HH:mm').format(note.updatedAt.toLocal());
+    final isDarkMode = ref.watch(isDarkModeProvider);
 
     return GestureDetector(
       onTap: () {
@@ -267,6 +367,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         decoration: BoxDecoration(
           color: note.backgroundColor,
           borderRadius: BorderRadius.circular(16),
+          border: isDarkMode
+              ? Border.all(color: Colors.grey[800]!, width: 1)
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,9 +388,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                       Expanded(
                         child: Text(
                           note.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            color: isDarkMode ? AppColors.darkCard : null,
                           ),
                         ),
                       ),
@@ -305,18 +409,23 @@ class _HomePageState extends ConsumerState<HomePage> {
             const SizedBox(height: 8),
             Expanded(
               child: note.isLocked
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         '🔒 Bu not kilitlidir',
                         style: TextStyle(
                           fontSize: 14,
                           fontStyle: FontStyle.italic,
+                          color:
+                              isDarkMode ? AppColors.darkSecondaryText : null,
                         ),
                       ),
                     )
                   : Text(
                       note.content,
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDarkMode ? AppColors.darkCard : null,
+                      ),
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -327,7 +436,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey[800],
+                color:
+                    isDarkMode ? AppColors.darkSecondaryText : Colors.grey[800],
               ),
             ),
           ],

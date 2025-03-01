@@ -180,9 +180,10 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
     final hasProcessedImages =
         _extractedTexts.values.any((text) => text != null);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Create Image Note'),
         actions: [
@@ -204,19 +205,32 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Title',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color
+                      ?.withOpacity(0.6),
+                ),
                 border: InputBorder.none,
               ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('Category: '),
+                Text(
+                  'Category: ',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
                 categoriesAsyncValue.when(
                   data: (categories) => DropdownButton<String>(
                     value: _selectedCategory,
@@ -268,7 +282,13 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                           color: color,
                           shape: BoxShape.circle,
                           border: color == _selectedColor
-                              ? Border.all(color: Colors.black, width: 2)
+                              ? Border.all(
+                                  color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color ??
+                                      Colors.black,
+                                  width: 2)
                               : null,
                         ),
                       ),
@@ -314,29 +334,53 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 32),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: isDarkMode
+                              ? Theme.of(context).colorScheme.surface
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
+                          border: Border.all(
+                              color: isDarkMode
+                                  ? Colors.grey[700]!
+                                  : Colors.grey[300]!),
                         ),
                         child: Column(
                           children: [
-                            const Icon(Icons.image,
-                                size: 64, color: Colors.grey),
+                            Icon(Icons.image,
+                                size: 64,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color
+                                    ?.withOpacity(0.5)),
                             const SizedBox(height: 16),
-                            const Text(
+                            Text(
                               'Add images to extract text',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color
+                                      ?.withOpacity(0.5)),
                             ),
                             const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.touch_app, color: Colors.grey[600]),
+                                Icon(Icons.touch_app,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.color
+                                        ?.withOpacity(0.7)),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Tap to add image',
                                   style: TextStyle(
-                                    color: Colors.grey[600],
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.color
+                                        ?.withOpacity(0.7),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -359,6 +403,9 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 16),
+                          color: isDarkMode
+                              ? Theme.of(context).colorScheme.surface
+                              : null,
                           child: Padding(
                             padding: const EdgeInsets.all(8),
                             child: Column(
@@ -405,11 +452,15 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Extracted Text:',
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.color,
                                         ),
                                       ),
                                       TextButton.icon(
@@ -458,13 +509,23 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                     width: double.infinity,
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[200],
+                                      color: isDarkMode
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .background
+                                          : Colors.grey[200],
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: TextField(
                                       controller: textController,
                                       maxLines: null,
-                                      style: const TextStyle(fontSize: 14),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.color,
+                                      ),
                                       decoration: const InputDecoration(
                                         border: InputBorder.none,
                                         isDense: true,
