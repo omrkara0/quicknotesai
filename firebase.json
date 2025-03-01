@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"quicknotesai","appId":"1:237118780810:android:c7ae1006782b7c592fc473","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"quicknotesai","configurations":{"android":"1:237118780810:android:c7ae1006782b7c592fc473","ios":"1:237118780810:ios:e981eec4c018bf412fc473"}}}}}}

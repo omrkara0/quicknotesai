@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "237118780810",
+    "project_id": "quicknotesai",
+    "storage_bucket": "quicknotesai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237118780810:android:c7ae1006782b7c592fc473",
+        "android_client_info": {
+          "package_name": "com.example.quicknotesai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_4dJnjgv6LZOo7VM7zrCgTxcUyEAD-uc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
