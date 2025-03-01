@@ -10,6 +10,11 @@ abstract class NoteRepository {
   Stream<List<Note>> getFavoriteNotes();
   Future<void> toggleFavorite(String id);
 
+  // Lock management
+  Future<void> lockNote(String id, String pinCode);
+  Future<void> unlockNote(String id);
+  Future<bool> verifyNotePin(String id, String pinCode);
+
   // Category management
   Stream<List<String>> getCategories();
   Future<void> addCategory(String category);

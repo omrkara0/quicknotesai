@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/gemini_provider.dart';
 import '../../domain/note.dart';
 import '../providers/note_provider.dart';
+import '../widgets/pin_code_dialog.dart';
 
 class CreateVoiceNotePage extends ConsumerStatefulWidget {
   const CreateVoiceNotePage({super.key});
@@ -23,6 +24,8 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
   File? _audioFile;
   bool _isProcessing = false;
   String? _transcription;
+  bool _isLocked = false;
+  String? _pinCode;
 
   final List<Color> _colors = [
     AppColors.orange,
@@ -88,6 +91,8 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isFavorite: false,
+      isLocked: _isLocked,
+      pinCode: _pinCode,
     );
 
     try {
@@ -104,6 +109,37 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
     }
   }
 
+  void _toggleLock() {
+    if (_isLocked) {
+      // Unlock the note
+      setState(() {
+        _isLocked = false;
+        _pinCode = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not kilidi kaldırıldı')),
+      );
+    } else {
+      // Lock the note
+      showDialog(
+        context: context,
+        builder: (context) => PinCodeDialog(
+          title: 'Notu Kilitle',
+          confirmButtonText: 'Kilitle',
+          onSubmit: (pinCode) {
+            setState(() {
+              _isLocked = true;
+              _pinCode = pinCode;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not kilitlendi')),
+            );
+          },
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
@@ -114,8 +150,13 @@ class _CreateVoiceNotePageState extends ConsumerState<CreateVoiceNotePage> {
         title: const Text('Create Voice Note'),
         actions: [
           IconButton(
+            icon: Icon(_isLocked ? Icons.lock : Icons.lock_open),
+            onPressed: _toggleLock,
+            tooltip: _isLocked ? 'Kilidi Kaldır' : 'Kilitle',
+          ),
+          IconButton(
             icon: const Icon(Icons.check),
-            onPressed: _transcription != null ? _createNote : null,
+            onPressed: _createNote,
           ),
         ],
       ),

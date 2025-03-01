@@ -16,6 +16,8 @@ class Note with _$Note {
     required String category,
     @ColorConverter() required Color backgroundColor,
     @Default(false) bool isFavorite,
+    @Default(false) bool isLocked,
+    String? pinCode,
   }) = _Note;
 
   factory Note.fromJson(Map<String, dynamic> json) => _$NoteFromJson(json);

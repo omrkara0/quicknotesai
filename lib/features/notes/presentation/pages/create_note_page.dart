@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/note.dart';
 import '../providers/note_provider.dart';
+import '../widgets/pin_code_dialog.dart';
 
 class CreateNotePage extends ConsumerStatefulWidget {
   const CreateNotePage({super.key});
@@ -17,6 +18,8 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
   final _contentController = TextEditingController();
   String _selectedCategory = 'To-do';
   Color _selectedColor = AppColors.orange;
+  bool _isLocked = false;
+  String? _pinCode;
 
   final List<Color> _colors = [
     AppColors.orange,
@@ -45,6 +48,8 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isFavorite: false,
+      isLocked: _isLocked,
+      pinCode: _pinCode,
     );
 
     try {
@@ -61,6 +66,37 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
     }
   }
 
+  void _toggleLock() {
+    if (_isLocked) {
+      // Unlock the note
+      setState(() {
+        _isLocked = false;
+        _pinCode = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not kilidi kaldırıldı')),
+      );
+    } else {
+      // Lock the note
+      showDialog(
+        context: context,
+        builder: (context) => PinCodeDialog(
+          title: 'Notu Kilitle',
+          confirmButtonText: 'Kilitle',
+          onSubmit: (pinCode) {
+            setState(() {
+              _isLocked = true;
+              _pinCode = pinCode;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not kilitlendi')),
+            );
+          },
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
@@ -70,6 +106,11 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
       appBar: AppBar(
         title: const Text('Create Note'),
         actions: [
+          IconButton(
+            icon: Icon(_isLocked ? Icons.lock : Icons.lock_open),
+            onPressed: _toggleLock,
+            tooltip: _isLocked ? 'Kilidi Kaldır' : 'Kilitle',
+          ),
           IconButton(
             icon: const Icon(Icons.check),
             onPressed: _createNote,

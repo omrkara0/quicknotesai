@@ -29,7 +29,8 @@ mixin _$Note {
   @ColorConverter()
   Color get backgroundColor => throw _privateConstructorUsedError;
   bool get isFavorite => throw _privateConstructorUsedError;
-  DateTime? get reminderDate => throw _privateConstructorUsedError;
+  bool get isLocked => throw _privateConstructorUsedError;
+  String? get pinCode => throw _privateConstructorUsedError;
 
   /// Serializes this Note to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -54,7 +55,8 @@ abstract class $NoteCopyWith<$Res> {
       String category,
       @ColorConverter() Color backgroundColor,
       bool isFavorite,
-      DateTime? reminderDate});
+      bool isLocked,
+      String? pinCode});
 }
 
 /// @nodoc
@@ -80,7 +82,8 @@ class _$NoteCopyWithImpl<$Res, $Val extends Note>
     Object? category = null,
     Object? backgroundColor = null,
     Object? isFavorite = null,
-    Object? reminderDate = freezed,
+    Object? isLocked = null,
+    Object? pinCode = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -115,10 +118,14 @@ class _$NoteCopyWithImpl<$Res, $Val extends Note>
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
-      reminderDate: freezed == reminderDate
-          ? _value.reminderDate
-          : reminderDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+      isLocked: null == isLocked
+          ? _value.isLocked
+          : isLocked // ignore: cast_nullable_to_non_nullable
+              as bool,
+      pinCode: freezed == pinCode
+          ? _value.pinCode
+          : pinCode // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -139,7 +146,8 @@ abstract class _$$NoteImplCopyWith<$Res> implements $NoteCopyWith<$Res> {
       String category,
       @ColorConverter() Color backgroundColor,
       bool isFavorite,
-      DateTime? reminderDate});
+      bool isLocked,
+      String? pinCode});
 }
 
 /// @nodoc
@@ -162,7 +170,8 @@ class __$$NoteImplCopyWithImpl<$Res>
     Object? category = null,
     Object? backgroundColor = null,
     Object? isFavorite = null,
-    Object? reminderDate = freezed,
+    Object? isLocked = null,
+    Object? pinCode = freezed,
   }) {
     return _then(_$NoteImpl(
       id: null == id
@@ -197,10 +206,14 @@ class __$$NoteImplCopyWithImpl<$Res>
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
-      reminderDate: freezed == reminderDate
-          ? _value.reminderDate
-          : reminderDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+      isLocked: null == isLocked
+          ? _value.isLocked
+          : isLocked // ignore: cast_nullable_to_non_nullable
+              as bool,
+      pinCode: freezed == pinCode
+          ? _value.pinCode
+          : pinCode // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -217,7 +230,8 @@ class _$NoteImpl implements _Note {
       required this.category,
       @ColorConverter() required this.backgroundColor,
       this.isFavorite = false,
-      this.reminderDate});
+      this.isLocked = false,
+      this.pinCode});
 
   factory _$NoteImpl.fromJson(Map<String, dynamic> json) =>
       _$$NoteImplFromJson(json);
@@ -241,11 +255,14 @@ class _$NoteImpl implements _Note {
   @JsonKey()
   final bool isFavorite;
   @override
-  final DateTime? reminderDate;
+  @JsonKey()
+  final bool isLocked;
+  @override
+  final String? pinCode;
 
   @override
   String toString() {
-    return 'Note(id: $id, title: $title, content: $content, createdAt: $createdAt, updatedAt: $updatedAt, category: $category, backgroundColor: $backgroundColor, isFavorite: $isFavorite, reminderDate: $reminderDate)';
+    return 'Note(id: $id, title: $title, content: $content, createdAt: $createdAt, updatedAt: $updatedAt, category: $category, backgroundColor: $backgroundColor, isFavorite: $isFavorite, isLocked: $isLocked, pinCode: $pinCode)';
   }
 
   @override
@@ -266,14 +283,15 @@ class _$NoteImpl implements _Note {
                 other.backgroundColor == backgroundColor) &&
             (identical(other.isFavorite, isFavorite) ||
                 other.isFavorite == isFavorite) &&
-            (identical(other.reminderDate, reminderDate) ||
-                other.reminderDate == reminderDate));
+            (identical(other.isLocked, isLocked) ||
+                other.isLocked == isLocked) &&
+            (identical(other.pinCode, pinCode) || other.pinCode == pinCode));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, title, content, createdAt,
-      updatedAt, category, backgroundColor, isFavorite, reminderDate);
+      updatedAt, category, backgroundColor, isFavorite, isLocked, pinCode);
 
   /// Create a copy of Note
   /// with the given fields replaced by the non-null parameter values.
@@ -301,7 +319,8 @@ abstract class _Note implements Note {
       required final String category,
       @ColorConverter() required final Color backgroundColor,
       final bool isFavorite,
-      final DateTime? reminderDate}) = _$NoteImpl;
+      final bool isLocked,
+      final String? pinCode}) = _$NoteImpl;
 
   factory _Note.fromJson(Map<String, dynamic> json) = _$NoteImpl.fromJson;
 
@@ -323,7 +342,9 @@ abstract class _Note implements Note {
   @override
   bool get isFavorite;
   @override
-  DateTime? get reminderDate;
+  bool get isLocked;
+  @override
+  String? get pinCode;
 
   /// Create a copy of Note
   /// with the given fields replaced by the non-null parameter values.

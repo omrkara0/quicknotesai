@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/gemini_provider.dart';
 import '../../domain/note.dart';
 import '../providers/note_provider.dart';
+import '../widgets/pin_code_dialog.dart';
 
 class EditNotePage extends ConsumerStatefulWidget {
   final Note note;
@@ -20,6 +21,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
   late String _selectedCategory;
   late Color _selectedColor;
   bool _isSummarizing = false;
+  late bool _isLocked;
 
   final List<Color> _colors = [
     AppColors.orange,
@@ -36,6 +38,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
     _contentController = TextEditingController(text: widget.note.content);
     _selectedCategory = widget.note.category;
     _selectedColor = widget.note.backgroundColor;
+    _isLocked = widget.note.isLocked;
   }
 
   @override
@@ -54,6 +57,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
       category: _selectedCategory,
       backgroundColor: _selectedColor,
       updatedAt: DateTime.now(),
+      isLocked: _isLocked,
     );
 
     try {
@@ -67,6 +71,37 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
           SnackBar(content: Text('Error updating note: ${e.toString()}')),
         );
       }
+    }
+  }
+
+  void _toggleLock() {
+    if (_isLocked) {
+      // Unlock the note
+      setState(() {
+        _isLocked = false;
+      });
+      ref.read(noteRepositoryProvider).unlockNote(widget.note.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not kilidi kaldırıldı')),
+      );
+    } else {
+      // Lock the note
+      showDialog(
+        context: context,
+        builder: (context) => PinCodeDialog(
+          title: 'Notu Kilitle',
+          confirmButtonText: 'Kilitle',
+          onSubmit: (pinCode) {
+            setState(() {
+              _isLocked = true;
+            });
+            ref.read(noteRepositoryProvider).lockNote(widget.note.id, pinCode);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not kilitlendi')),
+            );
+          },
+        ),
+      );
     }
   }
 
@@ -148,6 +183,11 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
       appBar: AppBar(
         title: const Text('Edit Note'),
         actions: [
+          IconButton(
+            icon: Icon(_isLocked ? Icons.lock : Icons.lock_open),
+            onPressed: _toggleLock,
+            tooltip: _isLocked ? 'Kilidi Kaldır' : 'Kilitle',
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: _showDeleteConfirmation,

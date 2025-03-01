@@ -10,6 +10,7 @@ import 'create_image_note_page.dart';
 import 'edit_note_page.dart';
 import '../widgets/animated_heart_icon.dart';
 import '../widgets/add_category_dialog.dart';
+import '../widgets/pin_code_dialog.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -255,12 +256,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EditNotePage(note: note),
-          ),
-        );
+        if (note.isLocked) {
+          _showUnlockDialog(note);
+        } else {
+          _navigateToEditPage(note);
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -275,12 +275,23 @@ class _HomePageState extends ConsumerState<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    note.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Row(
+                    children: [
+                      if (note.isLocked)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Icon(Icons.lock, size: 16),
+                        ),
+                      Expanded(
+                        child: Text(
+                          note.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 AnimatedHeartIcon(
@@ -293,12 +304,22 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: Text(
-                note.content,
-                style: const TextStyle(fontSize: 14),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: note.isLocked
+                  ? const Center(
+                      child: Text(
+                        '🔒 Bu not kilitlidir',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    )
+                  : Text(
+                      note.content,
+                      style: const TextStyle(fontSize: 14),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -311,6 +332,39 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showUnlockDialog(Note note) {
+    showDialog(
+      context: context,
+      builder: (context) => VerifyPinDialog(
+        onVerify: (_) {},
+        onCancel: () {
+          // Do nothing
+        },
+        onVerifyWithResult: (pinCode, callback) async {
+          final isValid = await ref
+              .read(noteRepositoryProvider)
+              .verifyNotePin(note.id, pinCode);
+
+          if (isValid) {
+            callback(true, null);
+            _navigateToEditPage(note);
+          } else {
+            callback(false, 'Yanlış PIN kodu. Tekrar deneyin.');
+          }
+        },
+      ),
+    );
+  }
+
+  void _navigateToEditPage(Note note) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditNotePage(note: note),
       ),
     );
   }

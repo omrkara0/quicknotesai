@@ -81,6 +81,32 @@ class FirebaseNoteRepository implements NoteRepository {
   }
 
   @override
+  Future<void> lockNote(String id, String pinCode) async {
+    await _firestore.collection(_collection).doc(id).update({
+      'isLocked': true,
+      'pinCode': pinCode,
+    });
+  }
+
+  @override
+  Future<void> unlockNote(String id) async {
+    await _firestore.collection(_collection).doc(id).update({
+      'isLocked': false,
+      'pinCode': null,
+    });
+  }
+
+  @override
+  Future<bool> verifyNotePin(String id, String pinCode) async {
+    final doc = await _firestore.collection(_collection).doc(id).get();
+    if (!doc.exists) {
+      throw Exception('Note not found');
+    }
+    final note = Note.fromJson(doc.data()!);
+    return note.pinCode == pinCode;
+  }
+
+  @override
   Stream<List<String>> getCategories() {
     return _firestore
         .collection(_categoriesCollection)

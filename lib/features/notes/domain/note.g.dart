@@ -16,9 +16,8 @@ _$NoteImpl _$$NoteImplFromJson(Map<String, dynamic> json) => _$NoteImpl(
       backgroundColor: const ColorConverter()
           .fromJson((json['backgroundColor'] as num).toInt()),
       isFavorite: json['isFavorite'] as bool? ?? false,
-      reminderDate: json['reminderDate'] == null
-          ? null
-          : DateTime.parse(json['reminderDate'] as String),
+      isLocked: json['isLocked'] as bool? ?? false,
+      pinCode: json['pinCode'] as String?,
     );
 
 Map<String, dynamic> _$$NoteImplToJson(_$NoteImpl instance) =>
@@ -32,5 +31,6 @@ Map<String, dynamic> _$$NoteImplToJson(_$NoteImpl instance) =>
       'backgroundColor':
           const ColorConverter().toJson(instance.backgroundColor),
       'isFavorite': instance.isFavorite,
-      'reminderDate': instance.reminderDate?.toIso8601String(),
+      'isLocked': instance.isLocked,
+      'pinCode': instance.pinCode,
     };

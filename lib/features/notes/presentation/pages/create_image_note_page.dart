@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/note.dart';
 import '../providers/note_provider.dart';
+import '../widgets/pin_code_dialog.dart';
 
 class CreateImageNotePage extends ConsumerStatefulWidget {
   const CreateImageNotePage({super.key});
@@ -25,6 +26,8 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
   final Map<File, bool> _processingStates = {};
   final Map<File, TextEditingController> _textControllers = {};
   final _textRecognizer = TextRecognizer();
+  bool _isLocked = false;
+  String? _pinCode;
 
   final List<Color> _colors = [
     AppColors.orange,
@@ -123,6 +126,8 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isFavorite: false,
+      isLocked: _isLocked,
+      pinCode: _pinCode,
     );
 
     try {
@@ -139,6 +144,37 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
     }
   }
 
+  void _toggleLock() {
+    if (_isLocked) {
+      // Unlock the note
+      setState(() {
+        _isLocked = false;
+        _pinCode = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not kilidi kaldırıldı')),
+      );
+    } else {
+      // Lock the note
+      showDialog(
+        context: context,
+        builder: (context) => PinCodeDialog(
+          title: 'Notu Kilitle',
+          confirmButtonText: 'Kilitle',
+          onSubmit: (pinCode) {
+            setState(() {
+              _isLocked = true;
+              _pinCode = pinCode;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Not kilitlendi')),
+            );
+          },
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
@@ -151,8 +187,13 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
         title: const Text('Create Image Note'),
         actions: [
           IconButton(
+            icon: Icon(_isLocked ? Icons.lock : Icons.lock_open),
+            onPressed: _toggleLock,
+            tooltip: _isLocked ? 'Kilidi Kaldır' : 'Kilitle',
+          ),
+          IconButton(
             icon: const Icon(Icons.check),
-            onPressed: hasProcessedImages ? _createNote : null,
+            onPressed: _createNote,
           ),
         ],
       ),
