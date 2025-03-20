@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/theme_provider.dart';
+import '../../../../core/constants/constants.dart';
 import '../providers/note_provider.dart';
 import '../../domain/note.dart';
 import 'create_note_page.dart';
-import 'create_voice_note_page.dart';
 import 'create_image_note_page.dart';
 import 'edit_note_page.dart';
 import '../widgets/animated_heart_icon.dart';
@@ -21,7 +21,7 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  String _selectedCategory = 'All';
+  String _selectedCategory = AppConstants.allCategory;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _showAddCategoryDialog() {
@@ -38,8 +38,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final notesAsyncValue = switch (_selectedCategory) {
-      'All' => ref.watch(notesProvider),
-      'Favorites' => ref.watch(favoriteNotesProvider),
+      AppConstants.allCategory => ref.watch(notesProvider),
+      AppConstants.favoritesCategory => ref.watch(favoriteNotesProvider),
       _ => ref.watch(categoryNotesProvider(_selectedCategory))
     };
 
@@ -59,9 +59,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'My\nNotes',
-                    style: TextStyle(
+                  Text(
+                    AppConstants.homePageTitle,
+                    style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
@@ -81,13 +81,25 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Row(
                   children: [
                     _buildCategoryChip(
-                        'All', AppColors.black, _selectedCategory == 'All'),
-                    _buildCategoryChip('Important', AppColors.yellow,
-                        _selectedCategory == 'Important'),
-                    _buildCategoryChip('To-do', AppColors.orange,
-                        _selectedCategory == 'To-do'),
-                    _buildCategoryChip('Favorites', AppColors.red,
-                        _selectedCategory == 'Favorites'),
+                        AppConstants.allCategory,
+                        AppColors.black,
+                        _selectedCategory == AppConstants.allCategory),
+                    _buildCategoryChip(
+                        AppConstants.importantCategory,
+                        AppColors.yellow,
+                        _selectedCategory == AppConstants.importantCategory),
+                    _buildCategoryChip(
+                        AppConstants.todoCategory,
+                        AppColors.orange,
+                        _selectedCategory == AppConstants.todoCategory),
+                    _buildCategoryChip(
+                        AppConstants.dailyCategory,
+                        AppColors.green,
+                        _selectedCategory == AppConstants.dailyCategory),
+                    _buildCategoryChip(
+                        AppConstants.favoritesCategory,
+                        AppColors.red,
+                        _selectedCategory == AppConstants.favoritesCategory),
                     ...categoriesAsyncValue.when(
                       data: (categories) => categories.map(
                         (category) => _buildCategoryChip(
@@ -119,7 +131,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(
-                    child: Text('Error: ${error.toString()}'),
+                    child:
+                        Text('${AppConstants.errorPrefix}${error.toString()}'),
                   ),
                 ),
               ),
@@ -144,18 +157,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const CreateNotePage()),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        _buildCircularButton(
-                          icon: Icons.mic,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateVoiceNotePage()),
                             );
                           },
                         ),
@@ -194,17 +195,19 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Ayarlar',
-                style: TextStyle(
+              Text(
+                AppConstants.settingsTitle,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 24),
               ListTile(
-                title: const Text('Tema'),
-                subtitle: Text(isDarkMode ? 'Koyu Tema' : 'Açık Tema'),
+                title: Text(AppConstants.themeSetting),
+                subtitle: Text(isDarkMode
+                    ? AppConstants.darkTheme
+                    : AppConstants.lightTheme),
                 trailing: Switch(
                   value: isDarkMode,
                   onChanged: (value) {
@@ -214,7 +217,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               const Divider(),
               ListTile(
-                title: const Text('Hakkında'),
+                title: Text(AppConstants.aboutSetting),
                 trailing: const Icon(Icons.info_outline),
                 onTap: () {
                   _showAboutDialog(context);
@@ -231,21 +234,20 @@ class _HomePageState extends ConsumerState<HomePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Quick Notes AI Hakkında'),
-        content: const Column(
+        title: Text(AppConstants.aboutTitle),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-                'Quick Notes AI, notlarınızı hızlı ve kolay bir şekilde yönetmenizi sağlayan bir uygulamadır.'),
-            SizedBox(height: 8),
-            Text('Sürüm: 1.0.0'),
+            Text(AppConstants.appDescription),
+            const SizedBox(height: 8),
+            Text(AppConstants.version),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Kapat'),
+            child: Text(AppConstants.close),
           ),
         ],
       ),
@@ -322,25 +324,24 @@ class _HomePageState extends ConsumerState<HomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Category'),
-          content:
-              Text('Are you sure you want to delete "$category" category?'),
+          title: Text(AppConstants.deleteCategoryTitle),
+          content: Text('"$category" ${AppConstants.deleteCategoryConfirm}'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(AppConstants.cancel),
             ),
             TextButton(
               onPressed: () {
                 ref.read(noteRepositoryProvider).deleteCategory(category);
                 Navigator.of(context).pop();
                 if (_selectedCategory == category) {
-                  setState(() => _selectedCategory = 'All');
+                  setState(() => _selectedCategory = AppConstants.allCategory);
                 }
               },
-              child: const Text(
-                'Delete',
-                style: TextStyle(color: Colors.red),
+              child: Text(
+                AppConstants.delete,
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ],
@@ -411,7 +412,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: note.isLocked
                   ? Center(
                       child: Text(
-                        '🔒 Bu not kilitlidir',
+                        AppConstants.lockedNoteMessage,
                         style: TextStyle(
                           fontSize: 14,
                           fontStyle: FontStyle.italic,
@@ -463,7 +464,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             callback(true, null);
             _navigateToEditPage(note);
           } else {
-            callback(false, 'Yanlış PIN kodu. Tekrar deneyin.');
+            callback(false, AppConstants.wrongPinCode);
           }
         },
       ),

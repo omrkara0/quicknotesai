@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/constants/constants.dart';
 import '../../domain/note.dart';
 import '../providers/note_provider.dart';
 import '../widgets/pin_code_dialog.dart';
@@ -16,7 +17,7 @@ class CreateNotePage extends ConsumerStatefulWidget {
 class _CreateNotePageState extends ConsumerState<CreateNotePage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  String _selectedCategory = 'To-do';
+  String _selectedCategory = AppConstants.todoCategory;
   Color _selectedColor = AppColors.orange;
   bool _isLocked = false;
   String? _pinCode;
@@ -60,7 +61,9 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating note: ${e.toString()}')),
+          SnackBar(
+              content:
+                  Text('${AppConstants.errorCreatingNote}${e.toString()}')),
         );
       }
     }
@@ -104,12 +107,14 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Create Note'),
+        title: Text(AppConstants.createNoteTitle),
         actions: [
           IconButton(
             icon: Icon(_isLocked ? Icons.lock : Icons.lock_open),
             onPressed: _toggleLock,
-            tooltip: _isLocked ? 'Kilidi Kaldır' : 'Kilitle',
+            tooltip: _isLocked
+                ? AppConstants.unlockTooltip
+                : AppConstants.lockTooltip,
           ),
           IconButton(
             icon: const Icon(Icons.check),
@@ -130,7 +135,7 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
                 color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
               decoration: InputDecoration(
-                hintText: 'Title',
+                hintText: AppConstants.titleHint,
                 hintStyle: TextStyle(
                   color: Theme.of(context)
                       .textTheme
@@ -145,7 +150,7 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
             Row(
               children: [
                 Text(
-                  'Category: ',
+                  AppConstants.categoryLabel,
                   style: TextStyle(
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
@@ -154,8 +159,9 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
                   data: (categories) => DropdownButton<String>(
                     value: _selectedCategory,
                     items: [
-                      'To-do',
-                      'Important',
+                      AppConstants.todoCategory,
+                      AppConstants.importantCategory,
+                      AppConstants.dailyCategory,
                       ...categories,
                     ]
                         .map((category) => DropdownMenuItem(
@@ -172,7 +178,11 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
                   loading: () => const CircularProgressIndicator(),
                   error: (_, __) => DropdownButton<String>(
                     value: _selectedCategory,
-                    items: ['To-do', 'Important']
+                    items: [
+                      AppConstants.todoCategory,
+                      AppConstants.importantCategory,
+                      AppConstants.dailyCategory,
+                    ]
                         .map((category) => DropdownMenuItem(
                               value: category,
                               child: Text(category),
@@ -224,7 +234,7 @@ class _CreateNotePageState extends ConsumerState<CreateNotePage> {
                 color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
               decoration: InputDecoration(
-                hintText: 'Write your note here...',
+                hintText: AppConstants.noteContentHint,
                 hintStyle: TextStyle(
                   color: Theme.of(context)
                       .textTheme

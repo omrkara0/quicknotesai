@@ -14,10 +14,20 @@ class GeminiService {
     Note content:
     ''';
 
-  static const String _transcribePrompt = '''
-    Sana şimdi bir mp3 dosyasının base64 e çevirilmiş halini veriyorum.
-    Bu base64 kodunu önce mp3 dosyasına çevir.
-    Sonrasında bu mp3 dosyasının içeriğini metin olarak dönüştür.
+  static const String _emotionPrompt = '''
+    Aşağıdaki metnin duygusal tonunu analiz et ve TAM OLARAK şu JSON formatında yanıt ver:
+    {
+      "emotion": "duygu_adı",
+      "intensity": 1-5 arası sayı,
+      "keywords": ["anahtar", "kelimeler"],
+      "suggestion": "öneri"
+    }
+    
+    Duygu adı şunlardan biri olmalı: "mutlu", "üzgün", "kızgın", "endişeli", "sakin", "enerjik", "yorgun", "motivasyonlu", "stresli", "minnettar"
+    
+    Önemli: Sadece JSON formatında yanıt ver, başka hiçbir metin ekleme. Markdown formatı kullanma.
+    
+    Metin:
     ''';
 
   GeminiService({required String apiKey})
@@ -36,44 +46,63 @@ class GeminiService {
     }
   }
 
-  Future<String> transcribeAudio(File audioFile) async {
+  Future<Map<String, dynamic>> analyzeEmotion(String content) async {
     try {
-      // Dosya boyutunu kontrol et
-      final fileSize = await audioFile.length();
-      print('Audio file size: ${fileSize / 1024 / 1024} MB');
+      final prompt = '$_emotionPrompt$content';
+      final response = await _model.generateContent([Content.text(prompt)]);
 
-      if (fileSize > 4 * 1024 * 1024) {
-        // 4MB limit örneği
-        return 'Error: File size exceeds limit. Maximum allowed size is 4MB';
+      if (response.text == null) {
+        throw Exception('Empty response from Gemini API');
       }
 
-      // Dosyayı base64'e çevir
-      final bytes = await audioFile.readAsBytes();
-      final base64Audio = base64Encode(bytes);
+      // JSON string'i temizle ve parse et
+      String jsonStr = response.text!.trim();
+      print('Raw response: $jsonStr'); // Debug için
 
-      print('Converting audio to base64: ${base64Audio.length} characters');
+      // Markdown formatını temizle
+      if (jsonStr.startsWith('```json')) {
+        jsonStr = jsonStr.substring(7);
+      }
+      if (jsonStr.endsWith('```')) {
+        jsonStr = jsonStr.substring(0, jsonStr.length - 3);
+      }
+      jsonStr = jsonStr.trim();
 
-      // Gemini'ye gönder
-      final prompt = '$_transcribePrompt$base64Audio';
+      // Eğer yanıt JSON formatında değilse, varsayılan bir yanıt döndür
+      if (!jsonStr.startsWith('{') || !jsonStr.endsWith('}')) {
+        print('Invalid JSON format');
+        return _getDefaultEmotionResponse();
+      }
 
       try {
-        final response = await _model.generateContent([Content.text(prompt)]);
+        final Map<String, dynamic> result = json.decode(jsonStr);
 
-        if (response.text == null || response.text!.isEmpty) {
-          return 'Error: Empty response from Gemini API';
+        // Gerekli alanların varlığını kontrol et
+        if (!result.containsKey('emotion') ||
+            !result.containsKey('intensity') ||
+            !result.containsKey('keywords') ||
+            !result.containsKey('suggestion')) {
+          print('Missing required fields');
+          return _getDefaultEmotionResponse();
         }
 
-        return response.text!;
-      } catch (apiError) {
-        print('Gemini API Error: $apiError');
-        if (apiError.toString().contains('Resource has been exhausted')) {
-          return 'Error: API quota exceeded. Please try again later or check your API limits.';
-        }
-        return 'Error transcribing audio: $apiError';
+        return result;
+      } catch (e) {
+        print('JSON parse error: $e');
+        return _getDefaultEmotionResponse();
       }
     } catch (e) {
-      print('General Error: $e');
-      return 'Error transcribing audio: $e';
+      print('Error analyzing emotion: $e');
+      return _getDefaultEmotionResponse();
     }
+  }
+
+  Map<String, dynamic> _getDefaultEmotionResponse() {
+    return {
+      'emotion': 'nötr',
+      'intensity': 3,
+      'keywords': [],
+      'suggestion': 'Duygu analizi yapılamadı'
+    };
   }
 }

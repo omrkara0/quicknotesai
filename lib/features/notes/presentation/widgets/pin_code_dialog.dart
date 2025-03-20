@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/constants/constants.dart';
 
 class PinCodeDialog extends StatefulWidget {
   final Function(String) onSubmit;
@@ -42,14 +43,14 @@ class _PinCodeDialogState extends State<PinCodeDialog> {
     final pin = _pinController.text.trim();
     if (pin.length != 4) {
       setState(() {
-        _errorText = 'PIN kodu 4 haneli olmalıdır';
+        _errorText = AppConstants.pinCodeLengthError;
       });
       return;
     }
 
     if (!RegExp(r'^\d{4}$').hasMatch(pin)) {
       setState(() {
-        _errorText = 'PIN kodu sadece rakamlardan oluşmalıdır';
+        _errorText = AppConstants.pinCodeDigitsError;
       });
       return;
     }
@@ -69,7 +70,7 @@ class _PinCodeDialogState extends State<PinCodeDialog> {
             controller: _pinController,
             focusNode: _pinFocusNode,
             decoration: InputDecoration(
-              labelText: '4 haneli PIN kodu',
+              labelText: AppConstants.pinCodeHint,
               errorText: _errorText,
               border: const OutlineInputBorder(),
             ),
@@ -97,7 +98,7 @@ class _PinCodeDialogState extends State<PinCodeDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('İptal'),
+          child: Text(AppConstants.cancel),
         ),
         ElevatedButton(
           onPressed: _validateAndSubmit,
@@ -132,7 +133,6 @@ class _VerifyPinDialogState extends State<VerifyPinDialog> {
   final TextEditingController _pinController = TextEditingController();
   final FocusNode _pinFocusNode = FocusNode();
   String? _errorText;
-  bool _isVerifying = false;
 
   @override
   void initState() {
@@ -149,31 +149,27 @@ class _VerifyPinDialogState extends State<VerifyPinDialog> {
     super.dispose();
   }
 
-  void _verifyPin() async {
+  void _validateAndSubmit() {
     final pin = _pinController.text.trim();
     if (pin.length != 4) {
       setState(() {
-        _errorText = 'PIN kodu 4 haneli olmalıdır';
+        _errorText = AppConstants.pinCodeLengthError;
+      });
+      return;
+    }
+
+    if (!RegExp(r'^\d{4}$').hasMatch(pin)) {
+      setState(() {
+        _errorText = AppConstants.pinCodeDigitsError;
       });
       return;
     }
 
     if (widget.onVerifyWithResult != null) {
-      setState(() {
-        _isVerifying = true;
-      });
-
-      widget.onVerifyWithResult!(pin, (isValid, errorMessage) {
-        if (mounted) {
+      widget.onVerifyWithResult!(pin, (success, error) {
+        if (!success && error != null) {
           setState(() {
-            _isVerifying = false;
-            if (!isValid) {
-              _errorText = errorMessage ?? 'Yanlış PIN kodu';
-              _pinController.clear();
-              _pinFocusNode.requestFocus();
-            } else {
-              Navigator.of(context).pop();
-            }
+            _errorText = error;
           });
         }
       });
@@ -186,18 +182,17 @@ class _VerifyPinDialogState extends State<VerifyPinDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Kilitli Not'),
+      title: Text(AppConstants.lockedNoteTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-              'Bu not kilitlidir. Görüntülemek için PIN kodunu giriniz.'),
+          Text(AppConstants.lockedNoteDescription),
           const SizedBox(height: 16),
           TextField(
             controller: _pinController,
             focusNode: _pinFocusNode,
             decoration: InputDecoration(
-              labelText: 'PIN Kodu',
+              labelText: AppConstants.pinCodeLabel,
               errorText: _errorText,
               border: const OutlineInputBorder(),
             ),
@@ -228,24 +223,16 @@ class _VerifyPinDialogState extends State<VerifyPinDialog> {
             widget.onCancel();
             Navigator.of(context).pop();
           },
-          child: const Text('İptal'),
+          child: Text(AppConstants.cancel),
         ),
-        _isVerifying
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
-              )
-            : ElevatedButton(
-                onPressed: _verifyPin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.blue,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Doğrula'),
-              ),
+        ElevatedButton(
+          onPressed: _validateAndSubmit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.blue,
+            foregroundColor: Colors.white,
+          ),
+          child: Text(AppConstants.lockButtonText),
+        ),
       ],
     );
   }

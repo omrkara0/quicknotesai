@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/constants.dart';
 
 class AddCategoryDialog extends StatefulWidget {
   final Function(String) onAdd;
@@ -23,7 +24,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
     final category = _controller.text.trim();
     if (category.isEmpty) {
       setState(() {
-        _errorText = 'Category name cannot be empty';
+        _errorText = AppConstants.categoryEmptyError;
       });
       return;
     }
@@ -34,11 +35,11 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add Category'),
+      title: Text(AppConstants.addCategoryTitle),
       content: TextField(
         controller: _controller,
         decoration: InputDecoration(
-          hintText: 'Enter category name',
+          hintText: AppConstants.addCategoryHint,
           errorText: _errorText,
         ),
         autofocus: true,
@@ -48,11 +49,11 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppConstants.cancel),
         ),
         TextButton(
           onPressed: _validateAndAdd,
-          child: const Text('Add'),
+          child: Text(AppConstants.add),
         ),
       ],
     );

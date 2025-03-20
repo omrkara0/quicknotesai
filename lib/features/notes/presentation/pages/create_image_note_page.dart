@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/constants/constants.dart';
 import '../../domain/note.dart';
 import '../providers/note_provider.dart';
 import '../widgets/pin_code_dialog.dart';
@@ -19,7 +20,7 @@ class CreateImageNotePage extends ConsumerStatefulWidget {
 
 class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
   final _titleController = TextEditingController();
-  String _selectedCategory = 'To-do';
+  String _selectedCategory = AppConstants.todoCategory;
   Color _selectedColor = AppColors.orange;
   final List<File> _imageFiles = [];
   final Map<File, String?> _extractedTexts = {};
@@ -65,7 +66,9 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: ${e.toString()}')),
+          SnackBar(
+              content:
+                  Text('${AppConstants.errorPickingImage}${e.toString()}')),
         );
       }
     }
@@ -88,7 +91,9 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error processing image: ${e.toString()}')),
+          SnackBar(
+              content:
+                  Text('${AppConstants.errorProcessingImage}${e.toString()}')),
         );
         setState(() {
           _processingStates[imageFile] = false;
@@ -107,20 +112,14 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
     });
   }
 
-  Future<void> _createNote() async {
-    if (_titleController.text.isEmpty || _textControllers.isEmpty) return;
-
-    final allTexts = _textControllers.values
-        .map((controller) => controller.text)
-        .where((text) => text.isNotEmpty)
-        .join('\n\n');
-
-    if (allTexts.isEmpty) return;
+  void _createNote() async {
+    if (_titleController.text.isEmpty) return;
 
     final note = Note(
       id: const Uuid().v4(),
       title: _titleController.text,
-      content: allTexts,
+      content:
+          _extractedTexts.values.where((text) => text != null).join('\n\n'),
       category: _selectedCategory,
       backgroundColor: _selectedColor,
       createdAt: DateTime.now(),
@@ -138,7 +137,9 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating note: ${e.toString()}')),
+          SnackBar(
+              content:
+                  Text('${AppConstants.errorCreatingNote}${e.toString()}')),
         );
       }
     }
@@ -152,22 +153,22 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
         _pinCode = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not kilidi kaldırıldı')),
+        const SnackBar(content: Text(AppConstants.unlockedMessage)),
       );
     } else {
       // Lock the note
       showDialog(
         context: context,
         builder: (context) => PinCodeDialog(
-          title: 'Notu Kilitle',
-          confirmButtonText: 'Kilitle',
+          title: AppConstants.lockTitle,
+          confirmButtonText: AppConstants.lockButtonText,
           onSubmit: (pinCode) {
             setState(() {
               _isLocked = true;
               _pinCode = pinCode;
             });
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Not kilitlendi')),
+              const SnackBar(content: Text(AppConstants.lockedMessage)),
             );
           },
         ),
@@ -185,12 +186,14 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Create Image Note'),
+        title: Text(AppConstants.createImageNoteTitle),
         actions: [
           IconButton(
             icon: Icon(_isLocked ? Icons.lock : Icons.lock_open),
             onPressed: _toggleLock,
-            tooltip: _isLocked ? 'Kilidi Kaldır' : 'Kilitle',
+            tooltip: _isLocked
+                ? AppConstants.unlockTooltip
+                : AppConstants.lockTooltip,
           ),
           IconButton(
             icon: const Icon(Icons.check),
@@ -211,7 +214,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                 color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
               decoration: InputDecoration(
-                hintText: 'Title',
+                hintText: AppConstants.titleHint,
                 hintStyle: TextStyle(
                   color: Theme.of(context)
                       .textTheme
@@ -226,7 +229,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
             Row(
               children: [
                 Text(
-                  'Category: ',
+                  AppConstants.categoryLabel,
                   style: TextStyle(
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
@@ -235,8 +238,9 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                   data: (categories) => DropdownButton<String>(
                     value: _selectedCategory,
                     items: [
-                      'To-do',
-                      'Important',
+                      AppConstants.todoCategory,
+                      AppConstants.importantCategory,
+                      AppConstants.dailyCategory,
                       ...categories,
                     ]
                         .map((category) => DropdownMenuItem(
@@ -253,7 +257,11 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                   loading: () => const CircularProgressIndicator(),
                   error: (_, __) => DropdownButton<String>(
                     value: _selectedCategory,
-                    items: ['To-do', 'Important']
+                    items: [
+                      AppConstants.todoCategory,
+                      AppConstants.importantCategory,
+                      AppConstants.dailyCategory,
+                    ]
                         .map((category) => DropdownMenuItem(
                               value: category,
                               child: Text(category),
@@ -311,7 +319,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                               children: [
                                 ListTile(
                                   leading: const Icon(Icons.photo_library),
-                                  title: const Text('Choose from Gallery'),
+                                  title: Text(AppConstants.chooseFromGallery),
                                   onTap: () {
                                     Navigator.pop(context);
                                     _addImage(ImageSource.gallery);
@@ -319,7 +327,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt),
-                                  title: const Text('Take a Photo'),
+                                  title: Text(AppConstants.takePhoto),
                                   onTap: () {
                                     Navigator.pop(context);
                                     _addImage(ImageSource.camera);
@@ -354,7 +362,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                     ?.withOpacity(0.5)),
                             const SizedBox(height: 16),
                             Text(
-                              'Add images to extract text',
+                              AppConstants.addImageText,
                               style: TextStyle(
                                   color: Theme.of(context)
                                       .textTheme
@@ -374,7 +382,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                         ?.withOpacity(0.7)),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Tap to add image',
+                                  AppConstants.addImageHint,
                                   style: TextStyle(
                                     color: Theme.of(context)
                                         .textTheme
@@ -453,7 +461,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'Extracted Text:',
+                                        AppConstants.extractedTextLabel,
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -474,8 +482,8 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                                   ListTile(
                                                     leading: const Icon(
                                                         Icons.photo_library),
-                                                    title: const Text(
-                                                        'Choose from Gallery'),
+                                                    title: Text(AppConstants
+                                                        .chooseFromGallery),
                                                     onTap: () {
                                                       Navigator.pop(context);
                                                       _addImage(
@@ -485,8 +493,8 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                                   ListTile(
                                                     leading: const Icon(
                                                         Icons.camera_alt),
-                                                    title: const Text(
-                                                        'Take a Photo'),
+                                                    title: Text(
+                                                        AppConstants.takePhoto),
                                                     onTap: () {
                                                       Navigator.pop(context);
                                                       _addImage(
@@ -500,7 +508,7 @@ class _CreateImageNotePageState extends ConsumerState<CreateImageNotePage> {
                                         },
                                         icon: const Icon(
                                             Icons.add_photo_alternate),
-                                        label: const Text('Add Another'),
+                                        label: Text(AppConstants.addAnother),
                                       ),
                                     ],
                                   ),
