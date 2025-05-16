@@ -1,8 +1,7 @@
 
 
-![play_store_512](https://github.com/user-attachments/assets/d0753174-fc03-48f4-a8a2-81d6771b46a8)
 
-
+![Logo](https://github.com/user-attachments/assets/d0753174-fc03-48f4-a8a2-81d6771b46a8)
     
 # Quick Notes AI
 
