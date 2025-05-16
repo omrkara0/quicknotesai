@@ -32,7 +32,9 @@ Görüntü İşleme
   
 ## Ekran Görüntüleri
 
-![Uygulama Ekran Görüntüsü](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+
+![Screenshot_1747403381](https://github.com/user-attachments/assets/f02ec1a9-f2e3-47d5-b09e-e18b76ce5566)
+![Screenshot_1747403392](https://github.com/user-attachments/assets/7c050fb3-f9f9-49f9-a546-393e54649bae)
 
   
 ## Destek
